@@ -1,6 +1,11 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { HowItWorks } from "@/components/HowItWorks";
+import { Benefits } from "@/components/Benefits";
+import { Categories } from "@/components/Categories";
 import { FeaturedBusinesses } from "@/components/FeaturedBusinesses";
+import { Testimonials } from "@/components/Testimonials";
+import { CTASection } from "@/components/CTASection";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Check, Crown } from "lucide-react";
@@ -10,7 +15,12 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
+      <HowItWorks />
+      <Benefits />
+      <Categories />
       <FeaturedBusinesses />
+      <Testimonials />
+      <CTASection />
 
       {/* Premium Section */}
       <section className="py-16">
