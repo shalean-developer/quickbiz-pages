@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Check, Star, Zap, Crown, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 export const Pricing = () => {
   const plans = [
@@ -19,6 +20,7 @@ export const Pricing = () => {
       icon: Sparkles,
       cta: "Get Started Free",
       popular: false,
+      link: "/template/free",
     },
     {
       name: "Featured",
@@ -35,6 +37,7 @@ export const Pricing = () => {
       icon: Star,
       cta: "Go Featured",
       popular: true,
+      link: "/template/featured",
     },
     {
       name: "Premium",
@@ -52,6 +55,7 @@ export const Pricing = () => {
       icon: Crown,
       cta: "Go Premium",
       popular: false,
+      link: "/template/premium",
     },
     {
       name: "Setup Service",
@@ -68,6 +72,7 @@ export const Pricing = () => {
       icon: Zap,
       cta: "Get Setup Service",
       popular: false,
+      link: "/template/setup-service",
     },
   ];
 
@@ -126,12 +131,14 @@ export const Pricing = () => {
               </CardContent>
               
               <CardFooter>
-                <Button 
-                  className={`w-full ${plan.popular ? 'shadow-medium' : ''}`}
-                  variant={plan.popular ? 'default' : 'outline'}
-                >
-                  {plan.cta}
-                </Button>
+                <Link to={plan.link} className="w-full">
+                  <Button 
+                    className={`w-full ${plan.popular ? 'shadow-medium' : ''}`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                  >
+                    {plan.cta}
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}

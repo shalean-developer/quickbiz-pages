@@ -9,6 +9,10 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import BusinessPage from "./pages/BusinessPage";
 import NotFound from "./pages/NotFound";
+import FreeTemplate from "./pages/templates/FreeTemplate";
+import FeaturedTemplate from "./pages/templates/FeaturedTemplate";
+import PremiumTemplate from "./pages/templates/PremiumTemplate";
+import SetupServiceTemplate from "./pages/templates/SetupServiceTemplate";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/business/:slug" element={<BusinessPage />} />
+          <Route path="/template/free" element={<FreeTemplate />} />
+          <Route path="/template/featured" element={<FeaturedTemplate />} />
+          <Route path="/template/premium" element={<PremiumTemplate />} />
+          <Route path="/template/setup-service" element={<SetupServiceTemplate />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
