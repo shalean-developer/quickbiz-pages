@@ -16,6 +16,12 @@ const FreeTemplate = () => {
             <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
               Free Plan Template Preview
             </span>
+            {/* Logo Display */}
+            <div className="flex mb-6">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl flex items-center justify-center">
+                <Star className="h-10 w-10 md:h-12 md:h-12 text-white/60" />
+              </div>
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Your Business Name
             </h1>

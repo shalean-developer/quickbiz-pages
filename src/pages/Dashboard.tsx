@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Eye, MousePointerClick, Plus } from "lucide-react";
+import { Eye, MousePointerClick, Plus, Upload, X, Image as ImageIcon } from "lucide-react";
 
 const CATEGORIES = [
   "Cleaning",
@@ -42,7 +42,15 @@ const Dashboard = () => {
     instagram_url: "",
     twitter_url: "",
     services: "",
+    logo_url: "",
+    gallery_images: [] as string[],
   });
+  
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -97,41 +105,121 @@ const Dashboard = () => {
         instagram_url: business.instagram_url || "",
         twitter_url: business.twitter_url || "",
         services: business.services?.join(", ") || "",
+        logo_url: business.logo_url || "",
+        gallery_images: business.gallery_images || [],
       });
+      setLogoPreview(business.logo_url || "");
+      setGalleryPreviews(business.gallery_images || []);
     }
   }, [business]);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setGalleryFiles([...galleryFiles, ...files]);
+    
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setGalleryPreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryFiles(galleryFiles.filter((_, i) => i !== index));
+    setGalleryPreviews(galleryPreviews.filter((_, i) => i !== index));
+  };
+
+  const uploadImage = async (file: File, path: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${path}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('business-images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('business-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
+      
+      setUploading(true);
+      
+      try {
+        let logoUrl = formData.logo_url;
+        let galleryUrls = [...formData.gallery_images];
 
-      const businessData = {
-        owner_id: user.id,
-        name: formData.name,
-        slug: formData.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-        category: formData.category,
-        description: formData.description,
-        phone: formData.phone,
-        email: formData.email,
-        whatsapp: formData.whatsapp,
-        location: formData.location,
-        facebook_url: formData.facebook_url,
-        instagram_url: formData.instagram_url,
-        twitter_url: formData.twitter_url,
-        services: formData.services
-          ? formData.services.split(",").map((s) => s.trim())
-          : [],
-      };
+        // Upload logo if new file selected
+        if (logoFile) {
+          logoUrl = await uploadImage(logoFile, `${user.id}/logo`);
+        }
 
-      if (business) {
-        const { error } = await supabase
-          .from("businesses")
-          .update(businessData)
-          .eq("id", business.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("businesses").insert(businessData);
-        if (error) throw error;
+        // Upload gallery images if new files selected
+        if (galleryFiles.length > 0) {
+          const uploadedUrls = await Promise.all(
+            galleryFiles.map((file) => uploadImage(file, `${user.id}/gallery`))
+          );
+          galleryUrls = [...galleryUrls, ...uploadedUrls];
+        }
+
+        const businessData = {
+          owner_id: user.id,
+          name: formData.name,
+          slug: formData.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+          category: formData.category,
+          description: formData.description,
+          phone: formData.phone,
+          email: formData.email,
+          whatsapp: formData.whatsapp,
+          location: formData.location,
+          facebook_url: formData.facebook_url,
+          instagram_url: formData.instagram_url,
+          twitter_url: formData.twitter_url,
+          services: formData.services
+            ? formData.services.split(",").map((s) => s.trim())
+            : [],
+          logo_url: logoUrl,
+          gallery_images: galleryUrls,
+        };
+
+        if (business) {
+          const { error } = await supabase
+            .from("businesses")
+            .update(businessData)
+            .eq("id", business.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("businesses").insert(businessData);
+          if (error) throw error;
+        }
+        
+        // Clear upload states
+        setLogoFile(null);
+        setGalleryFiles([]);
+      } finally {
+        setUploading(false);
       }
     },
     onSuccess: () => {
@@ -301,6 +389,80 @@ const Dashboard = () => {
                 />
               </div>
 
+              <div className="space-y-4 border-t pt-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Business Images
+                </h3>
+                
+                {/* Logo Upload */}
+                <div className="space-y-2">
+                  <Label htmlFor="logo">Business Logo</Label>
+                  <div className="flex items-start gap-4">
+                    {logoPreview && (
+                      <div className="relative w-32 h-32 rounded-lg border overflow-hidden">
+                        <img
+                          src={logoPreview}
+                          alt="Logo preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <Input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload your business logo (PNG, JPG recommended)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gallery Upload */}
+                <div className="space-y-2">
+                  <Label htmlFor="gallery">Gallery Images (Featured & Premium)</Label>
+                  <Input
+                    id="gallery"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryChange}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Upload multiple images to showcase your work (available in Featured and Premium plans)
+                  </p>
+                  
+                  {galleryPreviews.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      {galleryPreviews.map((preview, index) => (
+                        <div key={index} className="relative group">
+                          <div className="relative w-full aspect-square rounded-lg border overflow-hidden">
+                            <img
+                              src={preview}
+                              alt={`Gallery ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeGalleryImage(index)}
+                              className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
@@ -384,15 +546,25 @@ const Dashboard = () => {
 
               <Button
                 onClick={() => saveMutation.mutate()}
-                disabled={saveMutation.isPending}
+                disabled={saveMutation.isPending || uploading}
                 className="w-full gap-2"
               >
-                <Plus className="h-4 w-4" />
-                {saveMutation.isPending
-                  ? "Saving..."
-                  : business
-                  ? "Update Business"
-                  : "Create Business"}
+                {uploading ? (
+                  <>
+                    <Upload className="h-4 w-4 animate-pulse" />
+                    Uploading Images...
+                  </>
+                ) : saveMutation.isPending ? (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    {business ? "Update Business" : "Create Business"}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>

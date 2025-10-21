@@ -19,6 +19,12 @@ const FeaturedTemplate = () => {
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
+            {/* Logo Display */}
+            <div className="flex justify-center mb-6">
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl flex items-center justify-center">
+                <ImageIcon className="h-12 w-12 md:h-16 md:h-16 text-white/60" />
+              </div>
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Featured Business Name
             </h1>
@@ -101,13 +107,17 @@ const FeaturedTemplate = () => {
                 Our Work
               </h2>
               <p className="text-lg text-muted-foreground">
-                See what we've accomplished for our clients
+                Your uploaded gallery images will appear here
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-square bg-gradient-hero/10 rounded-lg flex items-center justify-center hover:scale-105 transition-transform">
-                  <ImageIcon className="h-12 w-12 text-primary/30" />
+                <div key={i} className="group relative aspect-square bg-gradient-hero/10 rounded-lg flex flex-col items-center justify-center hover:scale-105 transition-all border-2 border-dashed border-primary/30">
+                  <ImageIcon className="h-12 w-12 text-primary/30 mb-2" />
+                  <span className="text-xs text-muted-foreground">Gallery Image {i}</span>
+                  <span className="absolute inset-0 flex items-center justify-center bg-primary/90 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                    Upload in Dashboard
+                  </span>
                 </div>
               ))}
             </div>
