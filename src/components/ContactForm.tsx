@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +21,7 @@ const formSchema = z.object({
 type ContactFormData = z.infer<typeof formSchema>;
 
 interface ContactFormProps {
+  businessId?: string;
   businessName: string;
   businessEmail?: string;
   businessPhone?: string;
@@ -28,6 +30,7 @@ interface ContactFormProps {
 }
 
 export const ContactForm = ({
+  businessId,
   businessName,
   businessEmail,
   businessPhone,
@@ -49,8 +52,32 @@ export const ContactForm = ({
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      // Simulate form submission
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (businessId) {
+        // Save to leads table
+        const { error } = await supabase.from("leads").insert({
+          business_id: businessId,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || null,
+          message: data.message,
+        });
+
+        if (error) throw error;
+
+        // Increment click count for the business
+        const { data: businessData } = await supabase
+          .from("businesses")
+          .select("click_count")
+          .eq("id", businessId)
+          .single();
+
+        if (businessData) {
+          await supabase
+            .from("businesses")
+            .update({ click_count: (businessData.click_count || 0) + 1 })
+            .eq("id", businessId);
+        }
+      }
       
       toast.success("Message sent successfully!", {
         description: `We'll get back to you soon at ${data.email}`,
@@ -58,6 +85,7 @@ export const ContactForm = ({
       
       form.reset();
     } catch (error) {
+      console.error("Error submitting form:", error);
       toast.error("Failed to send message", {
         description: "Please try again or contact us directly.",
       });

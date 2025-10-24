@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Directory from "./pages/Directory";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
 import BusinessPage from "./pages/BusinessPage";
 import NotFound from "./pages/NotFound";
 import FreeTemplate from "./pages/templates/FreeTemplate";
@@ -27,6 +28,8 @@ const App = () => (
           <Route path="/directory" element={<Directory />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/biz/:slug" element={<BusinessPage />} />
           <Route path="/business/:slug" element={<BusinessPage />} />
           <Route path="/template/free" element={<FreeTemplate />} />
           <Route path="/template/featured" element={<FeaturedTemplate />} />

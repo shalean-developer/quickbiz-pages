@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { BusinessCard } from "@/components/BusinessCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,38 +10,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
 
 const CATEGORIES = [
-  "All",
-  "Cleaning",
-  "Beauty",
-  "Auto",
-  "Food",
+  "All Categories",
+  "Cleaning Services",
+  "Catering",
+  "Design & Creative",
   "Technology",
-  "Retail",
-  "Health",
+  "Healthcare",
   "Education",
+  "Retail",
   "Other",
 ];
 
 const Directory = () => {
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
 
   const { data: businesses, isLoading } = useQuery({
     queryKey: ["businesses", search, selectedCategory],
     queryFn: async () => {
-      let query = supabase.from("businesses").select("*");
+      let query = supabase
+        .from("businesses")
+        .select("*")
+        .order("is_featured", { ascending: false })
+        .order("is_premium", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (search) {
-        query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%`);
+        query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,location.ilike.%${search}%,category.ilike.%${search}%`);
       }
 
-      if (selectedCategory !== "All") {
+      if (selectedCategory !== "All Categories") {
         query = query.eq("category", selectedCategory);
       }
 
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -107,6 +110,7 @@ const Directory = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
