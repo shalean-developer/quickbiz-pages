@@ -51,6 +51,69 @@ const Dashboard = () => {
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+
+  const handleUpgrade = async (plan: 'featured' | 'premium' | 'setup_service') => {
+    if (!business || !user) return;
+    
+    setProcessingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('paystack-initialize', {
+        body: {
+          businessId: business.id,
+          plan,
+          email: user.email,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.authorization_url) {
+        // Redirect to Paystack payment page
+        window.location.href = data.authorization_url;
+      } else {
+        throw new Error('Failed to initialize payment');
+      }
+    } catch (error: any) {
+      console.error('Payment initialization error:', error);
+      toast.error(error.message || 'Failed to initialize payment');
+      setProcessingPayment(false);
+    }
+  };
+
+  // Handle payment verification on return
+  useEffect(() => {
+    const verifyPayment = async (reference: string) => {
+      try {
+        const { data, error } = await supabase.functions.invoke('paystack-verify', {
+          body: { reference },
+        });
+
+        if (error) throw error;
+
+        if (data?.status === 'success') {
+          toast.success('Payment successful! Your business has been upgraded.');
+          queryClient.invalidateQueries({ queryKey: ["my-business"] });
+        } else {
+          toast.error('Payment verification failed');
+        }
+      } catch (error: any) {
+        console.error('Payment verification error:', error);
+        toast.error(error.message || 'Failed to verify payment');
+      }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const reference = urlParams.get('reference');
+    const paymentStatus = urlParams.get('payment');
+    
+    if (reference && paymentStatus === 'success') {
+      verifyPayment(reference);
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [queryClient]);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -299,6 +362,46 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {business && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Your Plan</CardTitle>
+                <CardDescription>
+                  {business.is_premium
+                    ? "You're on the Premium plan with all features unlocked!"
+                    : business.is_featured
+                    ? "You're on the Featured plan. Upgrade to Premium for more visibility!"
+                    : "You're on the Free plan. Upgrade to get more features and visibility!"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4">
+                  {!business.is_featured && (
+                    <Button
+                      onClick={() => handleUpgrade('featured')}
+                      variant="default"
+                    >
+                      Upgrade to Featured - ₦49
+                    </Button>
+                  )}
+                  {!business.is_premium && (
+                    <Button
+                      onClick={() => handleUpgrade('premium')}
+                      variant="default"
+                    >
+                      Upgrade to Premium - ₦99
+                    </Button>
+                  )}
+                  {business.is_premium && (
+                    <div className="text-sm text-muted-foreground">
+                      ✨ You have access to all features!
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           <Card>
