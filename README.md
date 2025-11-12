@@ -12,6 +12,7 @@ BizBudLink is a complete platform where small business owners can create and pub
 - **Business Listings** - Create and manage professional business pages
 - **User Authentication** - Secure signup/login with Supabase Auth
 - **Directory** - Browse local businesses with search and category filters
+- **Sites Gallery** - Portfolio showcase of live client websites with interactive previews
 - **Lead Tracking** - Capture and manage customer inquiries
 - **Analytics Dashboard** - Track page views and contact clicks
 - **Payment Integration** - Paystack integration for premium upgrades
@@ -132,18 +133,26 @@ src/
 │   ├── Hero.tsx         # Landing page hero
 │   ├── BusinessCard.tsx # Business listing card
 │   ├── ContactForm.tsx  # Lead capture form
+│   ├── SiteCard.tsx     # Site gallery card
+│   ├── SiteGrid.tsx     # Site gallery grid
+│   ├── ScreenshotCarousel.tsx  # Image carousel
+│   ├── PreviewModal.tsx # Site preview modal
 │   └── ...
 ├── pages/               # Route pages
 │   ├── Index.tsx        # Landing page
 │   ├── Auth.tsx         # Login/Signup
 │   ├── Dashboard.tsx    # Business management
 │   ├── Directory.tsx    # Business listings
+│   ├── Sites.tsx        # Sites gallery listing
+│   ├── SiteLanding.tsx  # Individual site showcase
 │   ├── Admin.tsx        # Admin panel
 │   ├── BusinessPage.tsx # Public business page
 │   └── templates/       # Plan templates
 │       ├── FreeTemplate.tsx
 │       ├── FeaturedTemplate.tsx
 │       └── PremiumTemplate.tsx
+├── data/                # Static data
+│   └── sites.ts         # Sites gallery configuration
 ├── integrations/        # Supabase client
 │   └── supabase/
 │       ├── client.ts
@@ -275,12 +284,72 @@ Paystack webhook endpoint (public, signature-verified)
 - Updates payment status
 - Upgrades business plan automatically
 
+## 🖼️ Sites Gallery Management
+
+The Sites Gallery feature showcases your portfolio of live client websites at `/sites`.
+
+### Adding New Sites
+
+1. **Update the data file** (`src/data/sites.ts`):
+```typescript
+{
+  slug: 'your-site-slug',
+  title: 'Your Site Title',
+  domain: 'https://yoursite.com',
+  description: 'Short description of the site',
+  category: 'Category (e.g., Spa, Agency)',
+  heroImage: '/images/sites/your-site-slug/hero.png',
+  screenshots: [
+    '/images/sites/your-site-slug/hero.png',
+    '/images/sites/your-site-slug/screenshot-2.png'
+  ],
+  contact: 'contact@yoursite.com',
+  primaryColor: '#HEXCOLOR',
+  tags: ['tag1', 'tag2', 'tag3'],
+  heroBlurb: 'Detailed description (2-3 sentences)',
+  launchDate: '2024'
+}
+```
+
+2. **Add screenshots**:
+   - Create directory: `public/images/sites/your-site-slug/`
+   - Add `hero.png` (main screenshot)
+   - Add `screenshot-2.png` (additional view)
+   - Recommended: 1920x1080px, optimized to <500KB
+
+3. The site will automatically appear in the gallery!
+
+### Screenshot Guidelines
+- Use 16:9 aspect ratio (1920x1080px recommended)
+- Optimize images (use TinyPNG or similar)
+- Capture full page or hero sections
+- Include multiple views of key features
+- See `public/images/sites/README.md` for details
+
 ## 🚀 Deployment
 
 ### Deploy on Lovable
 1. Open your [Lovable Project](https://lovable.dev/projects/97c82bad-3b4a-4556-9a98-7af18e1c54a5)
 2. Click Share → Publish
 3. Your app is live!
+
+### Push to GitHub
+1. **Connect GitHub** (if not connected):
+   - Click GitHub icon in top-right of Lovable
+   - Authorize Lovable to access your GitHub
+   
+2. **Push to Repository**:
+   - Click the GitHub icon → "Push to GitHub"
+   - Select repository: `https://github.com/shalean-developer/quickbiz-pages.git`
+   - Branch: `main` or create `feature/sites-gallery-add-3`
+   - Commit message: "Add sites gallery with 3 portfolio sites"
+   
+3. **Create Pull Request**:
+   - Go to GitHub repository
+   - Click "Pull requests" → "New pull request"
+   - Select your branch → `main`
+   - Add description and screenshots
+   - Submit PR for review
 
 ### Custom Domain
 1. Navigate to Project > Settings > Domains

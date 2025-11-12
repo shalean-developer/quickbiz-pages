@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import BusinessPage from "./pages/BusinessPage";
+import Sites from "./pages/Sites";
+import SiteLanding from "./pages/SiteLanding";
 import NotFound from "./pages/NotFound";
 import FreeTemplate from "./pages/templates/FreeTemplate";
 import FeaturedTemplate from "./pages/templates/FeaturedTemplate";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/biz/:slug" element={<BusinessPage />} />
           <Route path="/business/:slug" element={<BusinessPage />} />
+          <Route path="/sites" element={<Sites />} />
+          <Route path="/sites/:slug" element={<SiteLanding />} />
           <Route path="/template/free" element={<FreeTemplate />} />
           <Route path="/template/featured" element={<FeaturedTemplate />} />
           <Route path="/template/premium" element={<PremiumTemplate />} />
