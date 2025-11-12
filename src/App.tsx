@@ -16,6 +16,8 @@ import FreeTemplate from "./pages/templates/FreeTemplate";
 import FeaturedTemplate from "./pages/templates/FeaturedTemplate";
 import PremiumTemplate from "./pages/templates/PremiumTemplate";
 import SetupServiceTemplate from "./pages/templates/SetupServiceTemplate";
+import SpaTemplate from "./pages/templates/SpaTemplate";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/template/featured" element={<FeaturedTemplate />} />
           <Route path="/template/premium" element={<PremiumTemplate />} />
           <Route path="/template/setup-service" element={<SetupServiceTemplate />} />
+          <Route path="/templates/spa" element={<SpaTemplate />} />
+          <Route path="/terms" element={<Terms />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
